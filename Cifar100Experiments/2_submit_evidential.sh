@@ -3,7 +3,7 @@ identifier_name="Evidential."
 
 for sd in 1 2 3; do
 	for unc_type in "log" "mse" "digamma"; do
-	    for act in 'relu' 'softplus' 'exp'; do
+	    for act in 'relu' 'softplus' 'exp' 'elushift'; do
 		for kl in 0 1 10 100 200 500 1000 2000 5000 10000; do
 		    for uncertainty in "true"; do
 		        for evcor in "false"; do
