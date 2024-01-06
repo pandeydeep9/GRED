@@ -1,13 +1,10 @@
 import torch
 import torch.nn.functional as F
+from helpers import get_device
 from utilFiles.get_args import the_args
 
 args = the_args()
-
-def get_device():
-    device = args.device
-
-def get_evidence(y):
+def relu_evidence(y):
     if args.unc_act == 'relu':
         return F.relu(y)
     elif args.unc_act == 'softplus':
@@ -16,38 +13,17 @@ def get_evidence(y):
         return torch.exp(y)
     elif args.unc_act == 'none':
         return y
-    elif args.unc_act == 'elushift':
-        return torch.nn.ELU()(y) + 1
     else:
         print("The evidence function is not accurate.")
         raise NotImplementedError()
 
-def get_confidence(output, label):
-    conf = []
-    with torch.no_grad():
-        evidence = get_evidence(output)
-        alpha = evidence + 1
-        S = torch.sum(alpha, dim=1, keepdim = True)
-        probs = alpha / S
-        # print(probs.shape, label.shape)
-        probs = probs.cpu().numpy()
-        label = label.cpu().numpy()
-        for ind, l in enumerate(label):
-            conf.append(probs[ind, l])
-        
-    return conf
 
-def get_vacuity(output):
-    num_classes = 100 # Cifar100
-    evidence = get_evidence(output)
-    alpha = evidence + 1
+def exp_evidence(y):
+    return torch.exp(torch.clamp(y, -10, 10))
 
-    S = torch.sum(alpha, dim=1)
-    
-    with torch.no_grad():
-        vacuity = num_classes / S.detach()
-    
-    return vacuity
+
+def softplus_evidence(y):
+    return F.softplus(y)
 
 
 def kl_divergence(alpha, num_classes, device=None):
@@ -84,7 +60,6 @@ def loglikelihood_loss(y, alpha, device=None):
     return loglikelihood
 
 
-
 def mse_loss(y, alpha, epoch_num, num_classes, annealing_step, device=None):
     if not device:
         device = get_device()
@@ -97,11 +72,16 @@ def mse_loss(y, alpha, epoch_num, num_classes, annealing_step, device=None):
         torch.tensor(epoch_num / annealing_step, dtype=torch.float32),
     )
     
+    
+    
+    # print("KL strength: ", args.kl_strength, " kl pos: ", kl_pos.shape, alpha_cor.shape, loglikelihood.shape)
+
     kl_alpha = (alpha - 1) * (1 - y) + 1
     kl_div = annealing_coef * kl_divergence(kl_alpha, num_classes, device=device)
     
     S = torch.sum(alpha, dim=1, keepdim=True)
-    
+    # vacuity = num_classes / S.detach()
+    # kl_pos = torch.sum(torch.log(alpha - 1+1e-5) * y, dim = -1, keepdim=True)
     with torch.no_grad():
         vacuity = num_classes / S.detach()
     return loglikelihood + args.kl_strength * kl_div, vacuity
@@ -123,69 +103,75 @@ def edl_loss(func, y, alpha, epoch_num, num_classes, annealing_step, device=None
     kl_div = annealing_coef * kl_divergence(kl_alpha, num_classes, device=device)
     
     S = torch.sum(alpha, dim=1, keepdim=True)
-    
+    # vacuity = num_classes / S.detach()
+    # kl_pos = torch.sum(torch.log(alpha - 1+1e-5) * y, dim = -1, keepdim=True)
     with torch.no_grad():
         vacuity = num_classes / S.detach()
     
+    # S = torch.sum(alpha, dim=1, keepdim=True)
+    # with torch.no_grad():
+        # vacuity = num_classes / S.detach()
+    # kl_pos = torch.sum(torch.log(alpha - 1+1e-15) * y, dim = -1, keepdim=True)
+    
+    # if args.use_vac_reg:
+        # return A + args.kl_strength * kl_div - vacuity * kl_pos
+    # else:
     return A + args.kl_strength * kl_div, vacuity
 
-def edl_mse_loss(output, target, epoch_num, num_classes, annealing_step, device=None, debug=False):
+def edl_mse_loss(output, target, epoch_num, num_classes, annealing_step, device=None):
     if not device:
         device = get_device()
-    evidence = get_evidence(output)
+    evidence = relu_evidence(output)
     alpha = evidence + 1
     mse_loss_val, vacuity = mse_loss(target, alpha, epoch_num, num_classes, annealing_step, device=device)
     loss = torch.mean(mse_loss_val)
-    
-    output_correct = output*target
-    output_vac = vacuity * output_correct
-    output_negative = output_vac[output_vac<=0]
-
     if args.use_vac_reg:
-        loss -= torch.sum(output_negative)/output.shape[0]
-
-    if debug:
-        return loss, torch.mean(edl_loss_val), torch.sum(output_negative)/output.shape[0]
+        output_correct = output*target
+        loss -= torch.sum(vacuity * output_correct)/output_correct.shape[0]
     return loss
 
 
-def edl_log_loss(output, target, epoch_num, num_classes, annealing_step, device=None, debug = False):
+def edl_log_loss(output, target, epoch_num, num_classes, annealing_step, device=None):
     if not device:
         device = get_device()
-    evidence = get_evidence(output)
+    evidence = relu_evidence(output)
     alpha = evidence + 1
     edl_loss_val, vacuity = edl_loss(torch.log, target, alpha, epoch_num, num_classes, annealing_step, device)
     loss = torch.mean(edl_loss_val)
+    # print("EDL loss: ", edl_loss)
+    # print("vacuity: ", vacuity)
+    # print("loss: ", loss)
+    # print("output: ", output)
     
-    output_correct = output*target
-    output_vac = vacuity * output_correct
-    output_negative = output_vac[output_vac<=0]
-
+    # print("Target: ", target)
+    # print("output correct: ", output_correct)
     if args.use_vac_reg:
-        loss -= torch.sum(output_negative)/output.shape[0]
-
-    if debug:
-        return loss, torch.mean(edl_loss_val), torch.sum(output_negative)/output.shape[0]
+        output_correct = output*target
+        # print("output_correct: ", output_correct.shape)
+        # print("Output: ", output)
+        # print("Target: ", target)
+        # print("Output correct: ", output_correct)
+        # print("Vacuity: ", vacuity)
+        # print("Product: ", vacuity * output_correct)
+        # print("Loss: ", torch.mean(vacuity * output_correct))
+        # print("Before loss: ", loss)
+        # import time
+        # time.sleep(100)
+        loss -= torch.sum(vacuity * output_correct)/output_correct.shape[0]
     return loss
 
 
 def edl_digamma_loss(
-    output, target, epoch_num, num_classes, annealing_step, device=None, debug = False
+    output, target, epoch_num, num_classes, annealing_step, device=None
 ):
     if not device:
         device = get_device()
-    evidence = get_evidence(output)
+    evidence = relu_evidence(output)
     alpha = evidence + 1
     edl_loss_val, vacuity = edl_loss(torch.digamma, target, alpha, epoch_num, num_classes, annealing_step, device)
     loss = torch.mean(edl_loss_val)
     
-    output_correct = output*target
-    output_vac = vacuity * output_correct
-    output_negative = output_vac[output_vac<=0]
-
     if args.use_vac_reg:
-        loss -= torch.sum(output_negative)/output.shape[0]
-
-    if debug:
-        return loss, torch.mean(edl_loss_val), torch.sum(output_negative)/output.shape[0]
+        output_correct = output*target
+        loss -= torch.sum(vacuity * output_correct)/output_correct.shape[0]
     return loss
