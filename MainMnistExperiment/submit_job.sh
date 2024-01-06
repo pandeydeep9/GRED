@@ -3,7 +3,7 @@ identifier_name="MnistExp"
 let sd=1
 for seed in 0 1 2; do
     for unc_type in "mse" "digamma" "log"; do
-        for act in 'exp' 'relu' 'softplus' ; do
+        for act in 'exp' 'relu' 'softplus' 'elushift'; do
             for kl_str in 0 1 10; do
                 for dropout in "true"; do
                     for uncertainty in "true"; do

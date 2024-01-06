@@ -6,7 +6,7 @@ for sd in 1 2 3; do
 	for kl in 0 1 10 100 1000 10000 50000; do
 
 		for unc_type in "log" "mse" "digamma"; do
-			for act in 'exp'; do
+			for act in 'exp' 'elushift' 'relu' 'softplus'; do
 			    for uncertainty in "true"; do
 				for evcor in "true" "false"; do
 

@@ -12,10 +12,10 @@ def the_args():
         "--uncertainty", type=str, default="True", help="Use uncertainty or not."
     )
     parser.add_argument(
-        "--unc_act", type=str, default="exp", choices = ['relu', 'softplus', 'exp', 'none']
+        "--unc_act", type=str, default="exp", choices = ['relu', 'softplus', 'exp', 'elushift', 'none']
     )
     parser.add_argument(
-        "--unc_type", type=str,  default="log", choices = ['mse', 'digamma', 'log']
+        "--unc_type", type=str,  default="mse", choices = ['mse', 'digamma', 'log']
     )
     parser.add_argument(
         "--exp_id", type=str,  default="Dec26.Local",

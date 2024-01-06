@@ -20,7 +20,7 @@ def the_args():
     )
 
     parser.add_argument(
-        "--unc_act", type=str, default="exp", choices = ['relu', 'softplus', 'exp', 'none']
+        "--unc_act", type=str, default="exp", choices = ['relu', 'softplus', 'exp', 'elushift', 'none']
     )
     parser.add_argument(
         "--unc_type", type=str,  default="log", choices = ['mse', 'digamma', 'log']
