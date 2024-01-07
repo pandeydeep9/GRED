@@ -38,10 +38,6 @@ Run ``` bash submit_evidential.sh ``` to obtain all Evidential model results (Al
 Run ``` bash 1_submit_baseline_ce.sh ``` to obtain Cross-Entropy based standard classifier model's results<br>
 Run ``` bash 2_submit_evidential.sh ``` to obtain all Evidential model results (All hyperparameters and settings)<br>
 
-<li> <b>All Few Shot Classification Experiments</b>
-<p> For all Few-Shot Classification experiments with mini-ImageNet, consider the folder FewShotExperiments</p>
-Run ``` bash 1_submit_baseline_ce.sh ``` to obtain Cross-Entropy based standard classifier model's results<br>
-Run ``` bash 2_submit_evidential.sh ``` to obtain all Evidential model results (All hyperparameters and settings)<br>
 
 </ol>
 <H3> Datasets:</H3>
