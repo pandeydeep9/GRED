@@ -43,7 +43,7 @@ Run ``` bash 2_submit_evidential.sh ``` to obtain all Evidential model results (
 <H3> Datasets:</H3>
 
 MNIST dataset, Cifar10 dataset, and Cifar100 dataset are automatically downloaded from the script. <br>
-mini-Imagenet dataset needs to be downloaded and placed in the materials folder. Follow instructions in 0_mini_imagenet_instructions.txt for mini-ImageNet.
+
 
 <H3>References:</H3>
 <ul>
