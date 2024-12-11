@@ -1,4 +1,4 @@
-<H1> Regularized Evidential Model Code (RED) </H1>
+<H1> Generalized Regularized Evidential Model Code (RED) </H1>
 
 Paper Title: Learn to Accumulate Evidence from All Training Samples: Theory and Practice </br>
 Paper link: https://openreview.net/forum?id=2MaUpKBSju </br>
