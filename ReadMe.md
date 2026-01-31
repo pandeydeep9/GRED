@@ -1,4 +1,4 @@
-<H1> Generalized Regularized Evidential Model Code (RED) </H1>
+<H1> Generalized Regularized Evidential Model Code (GRED) </H1>
 
 Paper Title: Generalized Regularized Evidential Deep Learning Models: Theory and Comprehensive Evaluation </br>
 Paper published in TPAMI : Transactions on Pattern Analysis and Machine Intelligence </br>
