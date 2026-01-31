@@ -1,10 +1,10 @@
 <H1> Generalized Regularized Evidential Model Code (RED) </H1>
 
-Paper Title: Learn to Accumulate Evidence from All Training Samples: Theory and Practice </br>
-Paper link: https://openreview.net/forum?id=2MaUpKBSju </br>
+Paper Title: Generalized Regularized Evidential Deep Learning Models: Theory and Comprehensive Evaluation </br>
+Paper published in TPAMI : Transactions on Pattern Analysis and Machine Intelligence </br>
 
 
-<p> This repository contains source code for the <b>Regularized Evidential Model Code (RED) </b> model. 
+<p> This repository contains source code for the <b>Generalized Regularized Evidential Model Code (GRED) </b> model. 
 
 
 
